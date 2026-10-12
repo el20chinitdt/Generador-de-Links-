@@ -2,8 +2,8 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Producciones El Chini | Generador de links</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Producciones El Chini | Generador Adaptativo Pro</title>
   <style>
     :root {
       --bg: #0b0f17;
@@ -86,16 +86,29 @@
       margin-bottom: 14px;
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 8px;
     }
 
-    .card-title::before {
+    .card-title-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-title-left::before {
       content: '';
       display: inline-block;
       width: 6px;
       height: 6px;
       background: var(--accent-color);
       border-radius: 50%;
+    }
+
+    .counter {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: normal;
     }
 
     textarea {
@@ -235,17 +248,20 @@
 
   <div class="container" id="main-ui">
     <header>
-      <h1>Producciones El Chini — Generador de links</h1>
-      <p>Pegá cualquier código HTML/JS</p>
+      <h1>Producciones El Chini — Generador Adaptativo Pro</h1>
+      <p>Convertí cualquier código HTML/JS en un reproductor 100% responsivo y adaptativo</p>
     </header>
 
     <div class="studio-grid">
       <div class="card">
-        <div class="card-title">Editor de Código</div>
-        <textarea id="code-input" placeholder="Pegá tu código HTML"></textarea>
+        <div class="card-title">
+          <div class="card-title-left">Editor de Código</div>
+          <div class="counter" id="char-counter">0 caracteres</div>
+        </div>
+        <textarea id="code-input" placeholder="Pegá cualquier código HTML/JS aquí..."></textarea>
         
         <div class="actions-bar">
-          <button class="btn" id="btn-generate" type="button">Generar Link</button>
+          <button class="btn" id="btn-generate" type="button">Generar Link Adaptativo</button>
           <div class="btn-group">
             <button class="btn btn-secondary" id="btn-copy" type="button">Copiar</button>
             <button class="btn btn-secondary" id="btn-open" type="button">Abrir</button>
@@ -253,13 +269,15 @@
         </div>
 
         <div class="output-section hidden" id="result-section">
-          <label>Link Generado listo para Embed</label>
+          <label>Link Generado Listo para Usar</label>
           <textarea id="result-link" readonly></textarea>
         </div>
       </div>
 
       <div class="card">
-        <div class="card-title">Vista Previa (Formato Horizontal 16:9 Estricto)</div>
+        <div class="card-title">
+          <div class="card-title-left">Vista Previa Adaptativa</div>
+        </div>
         <div class="player-wrap">
           <div class="preview-placeholder" id="preview-placeholder">
             <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.5">
@@ -267,7 +285,7 @@
               <line x1="8" y1="21" x2="16" y2="21"></line>
               <line x1="12" y1="17" x2="12" y2="21"></line>
             </svg>
-            <span>Esperando código del player para previsualizar...</span>
+            <span>Esperando código para previsualizar...</span>
           </div>
           <iframe id="player-frame" class="hidden" scrolling="no" allowfullscreen allow="autoplay; fullscreen; picture-in-picture; screen-wake-lock; orientation-lock"></iframe>
         </div>
@@ -285,21 +303,76 @@
       const resultLink = document.getElementById('result-link');
       const previewPlaceholder = document.getElementById('preview-placeholder');
       const playerFrame = document.getElementById('player-frame');
+      const charCounter = document.getElementById('char-counter');
 
-      function utf8ToBase64(str) {
-        return btoa(unescape(encodeURIComponent(str)));
+      function safeEncode(str) {
+        const bytes = new TextEncoder().encode(str);
+        let binString = "";
+        for (let i = 0; i < bytes.byteLength; i++) {
+          binString += String.fromCharCode(bytes[i]);
+        }
+        return btoa(binString)
+          .replace(/\+/g, '-')
+          .replace(/\//g, '_')
+          .replace(/=+$/, '');
       }
 
-      function base64ToUtf8(str) {
-        return decodeURIComponent(escape(atob(str)));
+      function safeDecode(str) {
+        str = str.replace(/-/g, '+').replace(/_/g, '/');
+        while (str.length % 4) {
+          str += '=';
+        }
+        const binString = atob(str);
+        const bytes = Uint8Array.from(binString, (c) => c.charCodeAt(0));
+        return new TextDecoder().decode(bytes);
+      }
+
+      function updateCounter() {
+        charCounter.textContent = `${codeInput.value.length.toLocaleString()} caracteres`;
+      }
+      codeInput.addEventListener('input', updateCounter);
+
+      function makeAdaptiveHtml(rawContent) {
+        return `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <style>
+    * { box-sizing: border-box !important; }
+    html, body {
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      overflow: hidden !important;
+      background: #000 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+    iframe, video, object, embed, canvas, .video-js, .jwplayer, div[id*="player"], div[class*="player"] {
+      width: 100% !important;
+      height: 100% !important;
+      max-width: 100% !important;
+      max-height: 100% !important;
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      border: 0 !important;
+      object-fit: contain !important;
+    }
+  </style>
+</head>
+<body>
+  ${rawContent}
+</body>
+</html>`;
       }
 
       function buildEmbedUrl(content) {
-        const encoded = utf8ToBase64(content);
-        const params = new URLSearchParams();
-        params.set('cfg', encoded);
-        params.set('embed', '1');
-        return `${location.origin}${location.pathname}?${params.toString()}`;
+        const encoded = safeEncode(content);
+        return `${location.origin}${location.pathname}#embed=1&cfg=${encoded}`;
       }
 
       function generateLink() {
@@ -313,10 +386,7 @@
         resultLink.value = link;
         resultSection.classList.remove('hidden');
 
-        const cleanContent = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>html, body { margin: 0 !important; padding: 0 !important; width: 100% !important; height: 100% !important; overflow: hidden !important; background: #000; } iframe { width: 100% !important; height: 100% !important; border: 0 !important; }</style></head><body>${content}</body></html>`;
-
-        playerFrame.srcdoc = cleanContent;
-        
+        playerFrame.srcdoc = makeAdaptiveHtml(content);
         previewPlaceholder.classList.add('hidden');
         playerFrame.classList.remove('hidden');
 
@@ -346,64 +416,38 @@
         window.open(link, '_blank');
       });
 
-      // RENDERIZADO DEL LINK COMPARTIDO (COMPLETO Y ADAPTATIVO)
-      const params = new URLSearchParams(location.search);
-      const cfg = params.get('cfg');
+      const parseParams = () => {
+        const hash = location.hash.substring(1);
+        const search = location.search.substring(1);
+        const params = new URLSearchParams(hash || search);
+        return params;
+      };
+
+      const params = parseParams();
       const embed = params.get('embed');
+      const cfg = params.get('cfg');
 
       if (embed === '1' && cfg) {
         try {
           const mainUi = document.getElementById('main-ui');
-          if(mainUi) mainUi.remove();
+          if (mainUi) mainUi.remove();
 
-          const html = base64ToUtf8(decodeURIComponent(cfg));
-
-          const cleanEmbedContent = `<!DOCTYPE html>
-          <html>
-          <head>
-            <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-            <style>
-              html, body { margin: 0 !important; padding: 0 !important; width: 100% !important; height: 100% !important; overflow: hidden !important; background: #000 !important; }
-              iframe { width: 100% !important; height: 100% !important; border: 0 !important; display: block !important; }
-            </style>
-          </head>
-          <body>
-            ${html}
-          </body>
-          </html>`;
+          const rawContent = safeDecode(cfg);
 
           document.documentElement.style.cssText = "margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#000;";
           document.body.style.cssText = "margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#000;";
 
-          // CORRECCIÓN: Se removieron los bloqueos de sandbox para permitir la ejecución responsiva en el hosting
           const finalFrame = document.createElement('iframe');
           finalFrame.style.cssText = "width:100vw;height:100vh;border:0;display:block;margin:0;padding:0;position:fixed;top:0;left:0;z-index:999999;overflow:hidden;";
           finalFrame.setAttribute('allow', 'autoplay; fullscreen; picture-in-picture; screen-wake-lock; orientation-lock');
           finalFrame.setAttribute('allowfullscreen', 'true');
-          finalFrame.srcdoc = cleanEmbedContent;
+          finalFrame.srcdoc = makeAdaptiveHtml(rawContent);
 
           document.body.appendChild(finalFrame);
 
-          const handleFullscreenOrientation = () => {
-            if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement) {
-              if (screen.orientation && screen.orientation.lock) {
-                screen.orientation.lock('landscape').catch(err => console.log(err));
-              }
-            } else {
-              if (screen.orientation && screen.orientation.unlock) {
-                screen.orientation.unlock();
-              }
-            }
-          };
-
-          document.addEventListener('fullscreenchange', handleFullscreenOrientation);
-          document.addEventListener('webkitfullscreenchange', handleFullscreenOrientation);
-          document.addEventListener('mozfullscreenchange', handleFullscreenOrientation);
-
         } catch (e) {
-          console.error(e);
-          document.body.innerHTML = '<div style="color:#fff; padding:20px; font-family:sans-serif;">Error crítico al procesar el código adaptativo.</div>';
+          console.error("Error al decodificar:", e);
+          document.body.innerHTML = '<div style="color:#fff; padding:20px; font-family:sans-serif; text-align:center;"><h3>Error al cargar el contenido</h3><p>Asegurate de haber copiado el enlace completo.</p></div>';
         }
       }
     });
