@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Producciones El Chini | Generador de links</title>
+  <style>
+    :root {
+      --bg: #0b0f17;
+      --panel: #131a26;
+      --panel-nested: #1b2333;
+      --accent: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+      --accent-color: #00f2fe;
+      --text: #f5f7fa;
+      --muted: #8a99ad;
+      --border: rgba(255, 255, 255, 0.06);
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 30px 20px;
+      box-sizing: border-box;
+    }
+
+    header {
+      margin-bottom: 24px;
+      text-align: left;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: var(--accent);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    header p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .studio-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    @media (min-width: 1024px) {
+      .studio-grid {
+        grid-template-columns: 450px 1fr;
+        align-items: start;
+      }
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-title::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      background: var(--accent-color);
+      border-radius: 50%;
+    }
+
+    textarea {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--panel-nested);
+      color: #fff;
+      box-sizing: border-box;
+      font-family: "Fira Code", Consolas, Monaco, monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      resize: vertical;
+      transition: border-color 0.2s;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent-color);
+    }
+
+    #code-input {
+      min-height: 320px;
+      flex-grow: 1;
+    }
+
+    .actions-bar {
+      margin-top: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent);
+      color: #05070a;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+
+    .btn:hover {
+      opacity: 0.9;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-secondary {
+      background: var(--panel-nested);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .output-section {
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: 8px;
+      background: var(--panel-nested);
+      border: 1px solid var(--border);
+    }
+
+    .output-section label {
+      display: block;
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    #result-link {
+      min-height: 50px;
+      background: rgba(0, 0, 0, 0.2);
+      font-size: 12px;
+    }
+
+    .player-wrap {
+      border-radius: 8px;
+      overflow: hidden !important; 
+      background: #000;
+      border: 1px solid var(--border);
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      position: relative;
+    }
+
+    .preview-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      color: var(--muted);
+      font-size: 13px;
+      gap: 12px;
+      background: linear-gradient(135deg, #131a26 0%, #0b0f17 100%);
+      z-index: 1;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+      background: #000;
+      overflow: hidden !important;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container" id="main-ui">
+    <header>
+      <h1>Producciones El Chini — Generador de links</h1>
+      <p>Pegá cualquier código HTML/JS</p>
+    </header>
+
+    <div class="studio-grid">
+      <div class="card">
+        <div class="card-title">Editor de Código</div>
+        <textarea id="code-input" placeholder="Pegá tu código HTML"></textarea>
+        
+        <div class="actions-bar">
+          <button class="btn" id="btn-generate" type="button">Generar Link</button>
+          <div class="btn-group">
+            <button class="btn btn-secondary" id="btn-copy" type="button">Copiar</button>
+            <button class="btn btn-secondary" id="btn-open" type="button">Abrir</button>
+          </div>
+        </div>
+
+        <div class="output-section hidden" id="result-section">
+          <label>Link Generado listo para Embed</label>
+          <textarea id="result-link" readonly></textarea>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Vista Previa (Formato Horizontal 16:9 Estricto)</div>
+        <div class="player-wrap">
+          <div class="preview-placeholder" id="preview-placeholder">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.5">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+              <line x1="8" y1="21" x2="16" y2="21"></line>
+              <line x1="12" y1="17" x2="12" y2="21"></line>
+            </svg>
+            <span>Esperando código del player para previsualizar...</span>
+          </div>
+          <iframe id="player-frame" class="hidden" scrolling="no" allowfullscreen allow="autoplay; fullscreen; picture-in-picture; screen-wake-lock; orientation-lock"></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const codeInput = document.getElementById('code-input');
+      const btnGenerate = document.getElementById('btn-generate');
+      const btnCopy = document.getElementById('btn-copy');
+      const btnOpen = document.getElementById('btn-open');
+      const resultSection = document.getElementById('result-section');
+      const resultLink = document.getElementById('result-link');
+      const previewPlaceholder = document.getElementById('preview-placeholder');
+      const playerFrame = document.getElementById('player-frame');
+
+      function utf8ToBase64(str) {
+        return btoa(unescape(encodeURIComponent(str)));
+      }
+
+      function base64ToUtf8(str) {
+        return decodeURIComponent(escape(atob(str)));
+      }
+
+      function buildEmbedUrl(content) {
+        const encoded = utf8ToBase64(content);
+        const params = new URLSearchParams();
+        params.set('cfg', encoded);
+        params.set('embed', '1');
+        return `${location.origin}${location.pathname}?${params.toString()}`;
+      }
+
+      function generateLink() {
+        const content = codeInput.value.trim();
+        if (!content) {
+          alert('Por favor, ingresá un código primero.');
+          return '';
+        }
+
+        const link = buildEmbedUrl(content);
+        resultLink.value = link;
+        resultSection.classList.remove('hidden');
+
+        const cleanContent = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>html, body { margin: 0 !important; padding: 0 !important; width: 100% !important; height: 100% !important; overflow: hidden !important; background: #000; } iframe { width: 100% !important; height: 100% !important; border: 0 !important; }</style></head><body>${content}</body></html>`;
+
+        playerFrame.srcdoc = cleanContent;
+        
+        previewPlaceholder.classList.add('hidden');
+        playerFrame.classList.remove('hidden');
+
+        return link;
+      }
+
+      btnGenerate.addEventListener('click', generateLink);
+
+      btnCopy.addEventListener('click', async () => {
+        const link = resultLink.value.trim() || generateLink();
+        if (!link) return;
+
+        try {
+          await navigator.clipboard.writeText(link);
+          btnCopy.textContent = '¡Copiado!';
+          setTimeout(() => btnCopy.textContent = 'Copiar', 1500);
+        } catch (e) {
+          resultLink.focus();
+          resultLink.select();
+          document.execCommand('copy');
+        }
+      });
+
+      btnOpen.addEventListener('click', () => {
+        const link = resultLink.value.trim() || generateLink();
+        if (!link) return;
+        window.open(link, '_blank');
+      });
+
+      // RENDERIZADO DEL LINK COMPARTIDO (COMPLETO Y ADAPTATIVO)
+      const params = new URLSearchParams(location.search);
+      const cfg = params.get('cfg');
+      const embed = params.get('embed');
+
+      if (embed === '1' && cfg) {
+        try {
+          const mainUi = document.getElementById('main-ui');
+          if(mainUi) mainUi.remove();
+
+          const html = base64ToUtf8(decodeURIComponent(cfg));
+
+          const cleanEmbedContent = `<!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+            <style>
+              html, body { margin: 0 !important; padding: 0 !important; width: 100% !important; height: 100% !important; overflow: hidden !important; background: #000 !important; }
+              iframe { width: 100% !important; height: 100% !important; border: 0 !important; display: block !important; }
+            </style>
+          </head>
+          <body>
+            ${html}
+          </body>
+          </html>`;
+
+          document.documentElement.style.cssText = "margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#000;";
+          document.body.style.cssText = "margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#000;";
+
+          // CORRECCIÓN: Se removieron los bloqueos de sandbox para permitir la ejecución responsiva en el hosting
+          const finalFrame = document.createElement('iframe');
+          finalFrame.style.cssText = "width:100vw;height:100vh;border:0;display:block;margin:0;padding:0;position:fixed;top:0;left:0;z-index:999999;overflow:hidden;";
+          finalFrame.setAttribute('allow', 'autoplay; fullscreen; picture-in-picture; screen-wake-lock; orientation-lock');
+          finalFrame.setAttribute('allowfullscreen', 'true');
+          finalFrame.srcdoc = cleanEmbedContent;
+
+          document.body.appendChild(finalFrame);
+
+          const handleFullscreenOrientation = () => {
+            if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement) {
+              if (screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock('landscape').catch(err => console.log(err));
+              }
+            } else {
+              if (screen.orientation && screen.orientation.unlock) {
+                screen.orientation.unlock();
+              }
+            }
+          };
+
+          document.addEventListener('fullscreenchange', handleFullscreenOrientation);
+          document.addEventListener('webkitfullscreenchange', handleFullscreenOrientation);
+          document.addEventListener('mozfullscreenchange', handleFullscreenOrientation);
+
+        } catch (e) {
+          console.error(e);
+          document.body.innerHTML = '<div style="color:#fff; padding:20px; font-family:sans-serif;">Error crítico al procesar el código adaptativo.</div>';
+        }
+      }
+    });
+  </script>
+</body>
+</html>
